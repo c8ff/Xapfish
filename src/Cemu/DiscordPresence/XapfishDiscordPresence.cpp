@@ -1,4 +1,5 @@
 #include "XapfishDiscordPresence.h"
+#include "Cafe/HW/MMU/MMU.h"
 
 #ifdef ENABLE_DISCORD_RPC
 
@@ -40,6 +41,7 @@ void DiscordPresence::UpdatePresence(State state, const std::string& text, const
 		{
 			uint8* map = memory_getPointerFromVirtualOffset(0x120e1ec8);
 			std::string mapstr(reinterpret_cast<char*>(map));
+
 			if (map && !mapstr.empty())
 			{
 				icon_string = mapstr;
@@ -144,6 +146,32 @@ void DiscordPresence::UpdatePresence(State state, const std::string& text, const
 				{
 					icon_string = "sp_mission";
 					details_string = "Octo Valley Mission";
+				}
+			}
+
+			uint8_t* p1 = memory_getPointerFromVirtualOffset(0x19DF7F9E);
+			if (p1 != nullptr) {
+				uint32_t address = CPU_swapEndianU32(*reinterpret_cast<uint32_t*>(p1));
+				if (address > 0) {
+					uint8_t v_state = *memory_getPointerFromVirtualOffset(address + 81);
+
+					if (v_state == 0x00) {
+						state_string = "In-menus";
+						details_string = "";
+						icon_string = "logo_icon_big_png";
+					} else if (v_state < 0x07) {
+						state_string = "Waiting For Players";
+						details_string = "";
+						icon_string = "logo_icon_big_png";
+					} else if (v_state < 0x9) {
+						state_string = "Starting a game";
+					} else if (v_state < 0x12) {
+						state_string = "In-game";
+					} else if (v_state < 0x20) {
+						state_string = "Vieiwng Results";
+					} else {
+						state_string = "Playing Splatoon";
+					}
 				}
 			}
 		}
